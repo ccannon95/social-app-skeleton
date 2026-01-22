@@ -1,0 +1,145 @@
+COMMAND TEMPLATE — Docker / PostgreSQL / Django / Vue
+=================================================
+
+--- DOCKER (general) ---
+
+# Check Docker
+docker --version
+docker info
+
+# List containers
+docker ps
+docker ps -a
+
+# Stop / remove container
+docker stop <name>
+docker rm <name>
+
+# Logs
+docker logs <name>
+
+# Volumes
+docker volume ls
+docker volume inspect <volume>
+docker volume rm <volume>
+
+
+--- POSTGRES (Docker) ---
+
+# Run PostgreSQL container
+docker run -d \
+  --name postgres \
+  -p 5432:5432 \
+  -e POSTGRES_USER=caleb \
+  -e POSTGRES_PASSWORD=devpassword \
+  -e POSTGRES_DB=appdb \
+  -v pgdata:/var/lib/postgresql/data \
+  postgres:16
+
+# Exec into container
+docker exec -it postgres bash
+
+# psql inside container
+psql -U caleb -d appdb
+
+
+--- PSQL (from host) ---
+
+# Enter database
+psql -h localhost -U caleb -d appdb
+
+# Exit
+\q
+
+# List tables
+\dt
+
+# Describe table
+\d <table>
+
+# List databases
+\l
+
+# Switch database
+\c appdb
+
+# View users
+SELECT id, username, email FROM auth_user;
+
+# View sessions
+SELECT * FROM django_session;
+
+
+--- DJANGO ---
+
+# Create virtualenv
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install deps
+pip install django psycopg[binary] django-cors-headers
+
+# Start project
+django-admin startproject config .
+python manage.py startapp api
+
+# Run server
+python manage.py runserver
+
+# Migrations
+python manage.py makemigrations
+python manage.py migrate
+
+# Create admin user
+python manage.py createsuperuser
+
+# Django shell
+python manage.py shell
+
+# Check project
+python manage.py check
+
+
+--- DJANGO AUTH (inside shell) ---
+
+from django.contrib.auth.models import User
+
+User.objects.all()
+
+User.objects.create_user(
+    username="test",
+    password="test123"
+)
+
+
+--- VUE ---
+
+# Create app
+npm create vue@latest vue-frontend
+cd vue-frontend
+npm install
+npm run dev
+
+# Build
+npm run build
+
+
+--- CURL (API testing) ---
+
+# Signup
+curl -X POST http://127.0.0.1:8000/api/signup/ \
+  -H "Content-Type: application/json" \
+  -d '{"username":"test","password":"abc123"}'
+
+# Login
+curl -X POST http://127.0.0.1:8000/api/login/ \
+  -H "Content-Type: application/json" \
+  -d '{"username":"test","password":"abc123"}'
+
+
+--- NOTES ---
+
+• Django sessions stored in: django_session
+• Browser stores cookie: sessionid
+• Vue must use: credentials: 'include'
+• Backend owns rules and filtering
